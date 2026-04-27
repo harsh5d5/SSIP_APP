@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,6 +7,8 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Switch,
+  Modal,
+  TextInput,
 } from 'react-native';
 import {
   Cpu,
@@ -19,10 +21,48 @@ import {
   Clock,
   ChevronRight,
   Plus,
+  X,
+  CheckCircle2,
 } from 'lucide-react-native';
 import { Colors, Spacing, Shadows } from '../theme';
 
 const SystemScreen = () => {
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [newDeviceName, setNewDeviceName] = useState('');
+  const [selectedType, setSelectedType] = useState('Smart RGB LED Strip');
+
+  const [devices, setDevices] = useState([
+    { id: '1', name: 'MacBook Pro', detail: "Admin's Laptop", icon: Laptop, status: 'Online' },
+    { id: '2', name: 'Philips Hue - Lvl', detail: 'Master Bedroom', icon: Zap, status: 'Online' },
+    { id: '3', name: 'Smart TV - 4K', detail: 'Living Room', icon: Tv, status: 'Offline' },
+    { id: '4', name: 'Alexa Speaker', detail: 'Kitchen', icon: Speaker, status: 'Online' },
+  ]);
+
+  const deviceTypes = [
+    'Smart RGB LED Strip',
+    'Smart LED Strip',
+    'Fan Regulator',
+    'Motion Light',
+    'Tank Level Sensor',
+    'MultiLoad 1 to 20'
+  ];
+
+  const handleAddDevice = () => {
+    if (newDeviceName.trim() === '') return;
+    
+    const newDevice = {
+      id: Date.now().toString(),
+      name: newDeviceName,
+      detail: selectedType,
+      icon: Zap, // Default icon for new devices
+      status: 'Online',
+    };
+    
+    setDevices([newDevice, ...devices]);
+    setModalVisible(false);
+    setNewDeviceName('');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -68,15 +108,28 @@ const SystemScreen = () => {
 
         {/* Connected Devices Section */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Connected Devices</Text>
-          <Text style={styles.deviceCount}>12 Active</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Text style={styles.sectionTitle}>Connected Devices</Text>
+            <Text style={styles.deviceCount}>{devices.length} Active</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.addButton}
+            onPress={() => setModalVisible(true)}
+          >
+            <Plus size={18} color={Colors.primary} />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.deviceList}>
-          <DeviceItem name="MacBook Pro" detail="Admin's Laptop" icon={Laptop} status="Online" />
-          <DeviceItem name="Philips Hue - Lvl" detail="Master Bedroom" icon={Zap} status="Online" />
-          <DeviceItem name="Smart TV - 4K" detail="Living Room" icon={Tv} status="Offline" />
-          <DeviceItem name="Alexa Speaker" detail="Kitchen" icon={Speaker} status="Online" />
+          {devices.map(device => (
+            <DeviceItem 
+              key={device.id}
+              name={device.name} 
+              detail={device.detail} 
+              icon={device.icon} 
+              status={device.status} 
+            />
+          ))}
         </View>
 
         <View style={styles.systemInfoCard}>
@@ -91,9 +144,58 @@ const SystemScreen = () => {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Add Device Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add New Device</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <X size={24} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.inputLabel}>Device Name</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="e.g. Living Room RGB Strip"
+              value={newDeviceName}
+              onChangeText={setNewDeviceName}
+              placeholderTextColor={Colors.textSecondary}
+            />
+
+            <Text style={styles.inputLabel}>Device Category</Text>
+            <ScrollView style={styles.typeList} showsVerticalScrollIndicator={false}>
+              {deviceTypes.map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  style={[styles.typeOption, selectedType === type && styles.typeOptionSelected]}
+                  onPress={() => setSelectedType(type)}
+                >
+                  <Text style={[styles.typeOptionText, selectedType === type && styles.typeOptionTextSelected]}>
+                    {type}
+                  </Text>
+                  {selectedType === type && <CheckCircle2 size={20} color={Colors.primary} />}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity style={styles.saveButton} onPress={handleAddDevice}>
+              <Text style={styles.saveButtonText}>Add to System</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
+
 
 const AutomationItem = ({ title, subtitle, icon: Icon, active }) => (
   <View style={styles.autoItem}>
@@ -292,6 +394,84 @@ const styles = StyleSheet.create({
   infoSubtitle: {
     fontSize: 12,
     color: Colors.textSecondary,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: Colors.background,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    padding: Spacing.xl,
+    height: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+    marginBottom: Spacing.sm,
+  },
+  textInput: {
+    backgroundColor: Colors.white,
+    height: 56,
+    borderRadius: 16,
+    paddingHorizontal: Spacing.md,
+    fontSize: 16,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.xl,
+    ...Shadows.light,
+  },
+  typeList: {
+    flex: 1,
+    marginBottom: Spacing.xl,
+  },
+  typeOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    padding: Spacing.md,
+    borderRadius: 16,
+    marginBottom: Spacing.sm,
+    ...Shadows.light,
+  },
+  typeOptionSelected: {
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+  typeOptionText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  typeOptionTextSelected: {
+    color: Colors.primary,
+  },
+  saveButton: {
+    backgroundColor: Colors.primary,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Shadows.medium,
+  },
+  saveButtonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -21,6 +21,7 @@ import {
   Sun,
   ShieldCheck,
   Search,
+  Layers,
 } from 'lucide-react-native';
 import { Colors, Spacing, Shadows } from '../theme';
 import StatCard from '../components/StatCard';
@@ -28,6 +29,19 @@ import RoomCard from '../components/RoomCard';
 
 const DashboardScreen = () => {
   const { width } = useWindowDimensions();
+  
+  // MultiLoad State (20 Toggles)
+  const [loads, setLoads] = useState(Array(20).fill(false).map((_, i) => ({
+    id: i + 1,
+    active: i < 3 // First 3 active by default
+  })));
+
+  const toggleLoad = (id) => {
+    setLoads(loads.map(load => 
+      load.id === id ? { ...load, active: !load.active } : load
+    ));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topHeader}>
@@ -49,7 +63,7 @@ const DashboardScreen = () => {
         <View style={styles.welcomeContainer}>
           <Text style={styles.greetingText}>Good Evening,</Text>
           <Text style={styles.nameText}>Welcome home, <Text style={styles.nameHighlight}>Alex</Text></Text>
-          <Text style={styles.statusSubtitle}>12 devices are running perfectly in your home.</Text>
+          <Text style={styles.statusSubtitle}>System online • 12 sensors active</Text>
         </View>
 
         {/* Top Overview Stats */}
@@ -68,16 +82,42 @@ const DashboardScreen = () => {
           </View>
         </View>
 
-        {/* Quick Actions - Adapted from Web to Mobile Horizontal Scroll */}
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-          <QuickActionIcon icon={Sun} label="All Lights" active />
-          <QuickActionIcon icon={Moon} label="Night Mode" />
-          <QuickActionIcon icon={ShieldCheck} label="Away Mode" />
-          <QuickActionIcon icon={Zap} label="Eco Mode" />
-        </ScrollView>
+        {/* MultiLoad 1 to 20 Master Hub (NEW) */}
+        <View style={styles.sectionHeader}>
+          <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+            <Text style={styles.sectionTitle}>Relay Master Board</Text>
+            <View style={styles.loadBadge}>
+              <Text style={styles.loadBadgeText}>{loads.filter(l => l.active).length} ON</Text>
+            </View>
+          </View>
+          <TouchableOpacity>
+            <Layers size={18} color={Colors.primary} />
+          </TouchableOpacity>
+        </View>
 
-        {/* Rooms Section */}
+        <View style={styles.relayCard}>
+          <Text style={styles.relaySubtitle}>MultiLoad Control (1 - 20)</Text>
+          <View style={styles.relayGrid}>
+            {loads.map((load) => (
+              <TouchableOpacity
+                key={load.id}
+                onPress={() => toggleLoad(load.id)}
+                style={[
+                  styles.relayButton, 
+                  { width: (width - 80) / 5 }, // 5 columns
+                  load.active && styles.relayButtonActive
+                ]}
+              >
+                <Text style={[styles.relayNumber, load.active && styles.relayNumberActive]}>
+                  {load.id}
+                </Text>
+                <View style={[styles.relayIndicator, { backgroundColor: load.active ? Colors.white : '#D1D1D6' }]} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Active Rooms */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Active Rooms</Text>
           <TouchableOpacity>
@@ -110,7 +150,7 @@ const DashboardScreen = () => {
           </View>
           <View style={styles.securityTextContainer}>
             <Text style={styles.securityTitle}>Security System Active</Text>
-            <Text style={styles.securityStatus}>All doors locked • No motion detected</Text>
+            <Text style={styles.securityStatus}>Motion Light Ready • System Armed</Text>
           </View>
           <View style={styles.onlineBadge}>
             <View style={styles.greenDot} />
@@ -220,7 +260,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: Colors.textPrimary,
-    marginBottom: Spacing.md,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -229,45 +268,65 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     marginTop: Spacing.xl,
   },
-  viewAll: {
-    color: Colors.primary,
-    fontSize: 14,
+  loadBadge: {
+    backgroundColor: Colors.primary + '15',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  loadBadgeText: {
+    fontSize: 10,
     fontWeight: 'bold',
+    color: Colors.primary,
   },
-  horizontalScroll: {
-    flexDirection: 'row',
-    marginHorizontal: -Spacing.lg,
-    paddingHorizontal: Spacing.lg,
-  },
-  qaContainer: {
-    alignItems: 'center',
-    marginRight: Spacing.md,
-    width: 80,
-  },
-  qaIconWrapper: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
+  relayCard: {
     backgroundColor: Colors.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
+    borderRadius: 28,
+    padding: Spacing.lg,
     ...Shadows.light,
   },
-  qaActive: {
-    opacity: 1,
-  },
-  qaIconActive: {
-    backgroundColor: Colors.primary,
-    ...Shadows.orange,
-  },
-  qaLabel: {
+  relaySubtitle: {
     fontSize: 11,
     color: Colors.textSecondary,
     fontWeight: '600',
+    marginBottom: Spacing.lg,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
-  qaLabelActive: {
+  relayGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'center',
+  },
+  relayButton: {
+    height: 64,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  relayButtonActive: {
+    backgroundColor: Colors.primary,
+    ...Shadows.orange,
+  },
+  relayNumber: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+  relayNumberActive: {
+    color: Colors.white,
+  },
+  relayIndicator: {
+    width: 12,
+    height: 4,
+    borderRadius: 2,
+  },
+  viewAll: {
     color: Colors.primary,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   roomsGrid: {

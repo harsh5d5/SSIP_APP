@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,21 +7,26 @@ import {
   SafeAreaView,
   TouchableOpacity,
   useWindowDimensions,
+  Switch,
 } from 'react-native';
 import {
   ShieldCheck,
   Lock,
   Unlock,
-  Eye,
-  Bell,
   AlertTriangle,
   History,
   ChevronRight,
+  Eye,
 } from 'lucide-react-native';
 import { Colors, Spacing, Shadows } from '../theme';
 
 const SecurityScreen = () => {
   const { width } = useWindowDimensions();
+  
+  // Motion Light State
+  const [motionLightOn, setMotionLightOn] = useState(true);
+  const [isMotionDetected, setIsMotionDetected] = useState(true);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -39,7 +44,44 @@ const SecurityScreen = () => {
           <Text style={styles.statusText}>Your home is fully protected</Text>
         </View>
 
-        {/* Alerts Section (The Red Banner from Web) */}
+        {/* Motion Light Control (NEW) */}
+        <Text style={styles.sectionTitle}>Smart Lighting</Text>
+        <View style={styles.controlCard}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.iconCircle, { backgroundColor: '#F2F2F7' }]}>
+              <Eye size={20} color={Colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cardTitle}>Motion Light</Text>
+              <Text style={styles.cardSubtitle}>Front Yard • PIR Sensor</Text>
+            </View>
+            <Switch
+              value={motionLightOn}
+              onValueChange={setMotionLightOn}
+              trackColor={{ false: '#D1D1D6', true: Colors.primary + '50' }}
+              thumbColor={motionLightOn ? Colors.primary : '#FFFFFF'}
+            />
+          </View>
+
+          {motionLightOn && (
+            <View style={styles.motionStatusArea}>
+              <View style={[styles.motionIndicator, { backgroundColor: isMotionDetected ? Colors.error + '15' : Colors.success + '15' }]}>
+                <View style={[styles.pulseDot, { backgroundColor: isMotionDetected ? Colors.error : Colors.success }]} />
+                <Text style={[styles.motionStatusText, { color: isMotionDetected ? Colors.error : Colors.success }]}>
+                  {isMotionDetected ? 'MOTION DETECTED' : 'CLEAR'}
+                </Text>
+              </View>
+              <TouchableOpacity 
+                style={styles.testBtn}
+                onPress={() => setIsMotionDetected(!isMotionDetected)}
+              >
+                <Text style={styles.testBtnText}>Test Sensor</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        {/* Alerts Section */}
         <View style={styles.alertBanner}>
           <View style={styles.alertIconBg}>
             <AlertTriangle size={20} color={Colors.white} />
@@ -151,6 +193,69 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 14,
     color: 'rgba(255,255,255,0.8)',
+  },
+  controlCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 28,
+    padding: Spacing.lg,
+    ...Shadows.light,
+    marginBottom: Spacing.xl,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#FFF3E0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+  },
+  cardSubtitle: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+  },
+  motionStatusArea: {
+    marginTop: Spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  motionIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 8,
+  },
+  pulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  motionStatusText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  testBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: '#F2F2F7',
+  },
+  testBtnText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: Colors.textSecondary,
   },
   alertBanner: {
     backgroundColor: '#FFF5F5',

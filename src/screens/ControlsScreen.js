@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   useWindowDimensions,
+  Switch,
 } from 'react-native';
 import {
   Palette,
@@ -15,13 +16,27 @@ import {
   Moon,
   Zap,
   Coffee,
+  Lightbulb,
 } from 'lucide-react-native';
 import { Colors, Spacing, Shadows } from '../theme';
 
 const ControlsScreen = () => {
   const { width } = useWindowDimensions();
+  const [fanOn, setFanOn] = useState(true);
   const [fanSpeed, setFanSpeed] = useState(3);
-  const [activeTab, setActiveTab] = useState('static');
+  
+  // RGB Strip State
+  const [rgbOn, setRgbOn] = useState(true);
+  const [rgbBrightness, setRgbBrightness] = useState(80);
+  const [rgbMode, setRgbMode] = useState('Steady');
+  
+  // LED Strip State
+  const [ledOn, setLedOn] = useState(false);
+  const [ledBrightness, setLedBrightness] = useState(50);
+  const [ledMode, setLedMode] = useState('Steady');
+
+  const rgbModes = ['Blinking', 'Fade', 'Steady', 'Rainbow'];
+  const ledModes = ['Blinking', 'Fade', 'Steady'];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -31,7 +46,7 @@ const ControlsScreen = () => {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Simplified Scenes Section (Solid Colors) */}
+        {/* Quick Scenes */}
         <Text style={styles.sectionTitle}>Quick Scenes</Text>
         <View style={styles.scenesGrid}>
           <SceneCard title="Movie Mode" icon={Video} color="#4A00E0" width={width} />
@@ -40,72 +55,145 @@ const ControlsScreen = () => {
           <SceneCard title="Morning" icon={Coffee} color="#F37335" width={width} />
         </View>
 
-        {/* Simplified Ambient Lighting */}
-        <Text style={styles.sectionTitle}>Ambient Lighting</Text>
+        {/* Smart RGB LED Strip */}
+        <Text style={styles.sectionTitle}>Smart RGB LED Strips</Text>
         <View style={styles.controlCard}>
-          <View style={styles.lightingHeader}>
+          <View style={styles.cardHeader}>
             <View style={styles.iconCircle}>
               <Palette size={20} color={Colors.primary} />
             </View>
-            <View>
-              <Text style={styles.cardTitle}>RGB Controller</Text>
-              <Text style={styles.cardSubtitle}>Main Living Area</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cardTitle}>Living Room RGB</Text>
+              <Text style={styles.cardSubtitle}>{rgbOn ? 'Active' : 'Inactive'}</Text>
             </View>
+            <Switch
+              value={rgbOn}
+              onValueChange={setRgbOn}
+              trackColor={{ false: '#D1D1D6', true: Colors.primary + '50' }}
+              thumbColor={rgbOn ? Colors.primary : '#FFFFFF'}
+            />
           </View>
 
-          <View style={styles.colorPaletteContainer}>
-            <View style={[styles.colorBox, { backgroundColor: '#FF0000' }]} />
-            <View style={[styles.colorBox, { backgroundColor: '#00FF00' }]} />
-            <View style={[styles.colorBox, { backgroundColor: '#0000FF' }]} />
-            <View style={[styles.colorBox, { backgroundColor: '#FFFF00' }]} />
-            <View style={[styles.colorBox, { backgroundColor: '#FF00FF' }]} />
+          {rgbOn && (
+            <View style={styles.activeControls}>
+              <Text style={styles.label}>Brightness: {rgbBrightness}%</Text>
+              <View style={styles.sliderTrack}>
+                <TouchableOpacity 
+                  style={styles.sliderArea} 
+                  activeOpacity={1}
+                  onPress={(e) => {
+                    const newBrightness = Math.round((e.nativeEvent.locationX / (width - 80)) * 100);
+                    setRgbBrightness(Math.max(0, Math.min(100, newBrightness)));
+                  }}
+                >
+                  <View style={[styles.sliderFill, { width: `${rgbBrightness}%` }]} />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.label}>Mode</Text>
+              <View style={styles.modeGrid}>
+                {rgbModes.map(mode => (
+                  <TouchableOpacity 
+                    key={mode} 
+                    style={[styles.modeButton, rgbMode === mode && styles.modeButtonActive]}
+                    onPress={() => setRgbMode(mode)}
+                  >
+                    <Text style={[styles.modeButtonText, rgbMode === mode && styles.modeButtonTextActive]}>{mode}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Smart LED Strip */}
+        <Text style={styles.sectionTitle}>Smart LED Strips</Text>
+        <View style={styles.controlCard}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.iconCircle, { backgroundColor: '#F2F2F7' }]}>
+              <Lightbulb size={20} color={Colors.textSecondary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cardTitle}>Kitchen LED</Text>
+              <Text style={styles.cardSubtitle}>{ledOn ? 'Active' : 'Inactive'}</Text>
+            </View>
+            <Switch
+              value={ledOn}
+              onValueChange={setLedOn}
+              trackColor={{ false: '#D1D1D6', true: Colors.primary + '50' }}
+              thumbColor={ledOn ? Colors.primary : '#FFFFFF'}
+            />
           </View>
 
-          <View style={styles.tabContainer}>
-            <TouchableOpacity 
-              style={[styles.tab, activeTab === 'static' && styles.tabActive]}
-              onPress={() => setActiveTab('static')}
-            >
-              <Text style={[styles.tabText, activeTab === 'static' && styles.tabTextActive]}>Static</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.tab, activeTab === 'pulse' && styles.tabActive]}
-              onPress={() => setActiveTab('pulse')}
-            >
-              <Text style={[styles.tabText, activeTab === 'pulse' && styles.tabTextActive]}>Pulse</Text>
-            </TouchableOpacity>
-          </View>
+          {ledOn && (
+            <View style={styles.activeControls}>
+              <Text style={styles.label}>Brightness: {ledBrightness}%</Text>
+              <View style={styles.sliderTrack}>
+                <TouchableOpacity 
+                  style={styles.sliderArea} 
+                  activeOpacity={1}
+                  onPress={(e) => {
+                    const newBrightness = Math.round((e.nativeEvent.locationX / (width - 80)) * 100);
+                    setLedBrightness(Math.max(0, Math.min(100, newBrightness)));
+                  }}
+                >
+                  <View style={[styles.sliderFill, { width: `${ledBrightness}%`, backgroundColor: '#FFB800' }]} />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.label}>Mode</Text>
+              <View style={styles.modeGrid}>
+                {ledModes.map(mode => (
+                  <TouchableOpacity 
+                    key={mode} 
+                    style={[styles.modeButton, ledMode === mode && styles.modeButtonActive]}
+                    onPress={() => setLedMode(mode)}
+                  >
+                    <Text style={[styles.modeButtonText, ledMode === mode && styles.modeButtonTextActive]}>{mode}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Smart Fan Section */}
         <Text style={styles.sectionTitle}>Climate Control</Text>
         <View style={styles.controlCard}>
-          <View style={styles.lightingHeader}>
+          <View style={styles.cardHeader}>
             <View style={[styles.iconCircle, { backgroundColor: '#E3F2FD' }]}>
               <Wind size={20} color="#2196F3" />
             </View>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.cardTitle}>Smart Fan</Text>
               <Text style={styles.cardSubtitle}>Ceiling Fan • Room 1</Text>
             </View>
+            <Switch
+              value={fanOn}
+              onValueChange={setFanOn}
+              trackColor={{ false: '#D1D1D6', true: '#2196F350' }}
+              thumbColor={fanOn ? '#2196F3' : '#FFFFFF'}
+            />
           </View>
 
-          <View style={styles.fanControlArea}>
-            <View style={styles.fanStatus}>
-              <Text style={styles.fanSpeedText}>{fanSpeed}</Text>
-              <Text style={styles.fanLevelText}>Level</Text>
+          {fanOn && (
+            <View style={styles.fanControlArea}>
+              <View style={styles.fanStatus}>
+                <Text style={styles.fanSpeedText}>{fanSpeed}</Text>
+                <Text style={styles.fanLevelText}>Level</Text>
+              </View>
+              
+              <View style={styles.fanStepsContainer}>
+                {[1, 2, 3, 4, 5].map((step) => (
+                  <TouchableOpacity
+                    key={step}
+                    style={[styles.fanStep, fanSpeed >= step && { backgroundColor: '#2196F3' }]}
+                    onPress={() => setFanSpeed(step)}
+                  />
+                ))}
+              </View>
             </View>
-            
-            <View style={styles.fanStepsContainer}>
-              {[1, 2, 3, 4, 5].map((step) => (
-                <TouchableOpacity
-                  key={step}
-                  style={[styles.fanStep, fanSpeed >= step && { backgroundColor: '#2196F3' }]}
-                  onPress={() => setFanSpeed(step)}
-                />
-              ))}
-            </View>
-          </View>
+          )}
         </View>
 
         <View style={{ height: 40 }} />
@@ -180,11 +268,10 @@ const styles = StyleSheet.create({
     ...Shadows.light,
     marginBottom: Spacing.md,
   },
-  lightingHeader: {
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
-    marginBottom: Spacing.xl,
   },
   iconCircle: {
     width: 44,
@@ -203,47 +290,57 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.textSecondary,
   },
-  colorPaletteContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.xl,
+  activeControls: {
+    marginTop: Spacing.xl,
   },
-  colorBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 3,
-    borderColor: Colors.background,
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+    marginBottom: Spacing.sm,
   },
-  tabContainer: {
-    flexDirection: 'row',
+  sliderTrack: {
+    height: 40,
     backgroundColor: '#F2F2F7',
-    padding: 4,
-    borderRadius: 14,
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginBottom: Spacing.lg,
   },
-  tab: {
+  sliderArea: {
     flex: 1,
+  },
+  sliderFill: {
+    height: '100%',
+    backgroundColor: Colors.primary,
+    borderRadius: 20,
+  },
+  modeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  modeButton: {
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: 12,
+    backgroundColor: '#F2F2F7',
   },
-  tabActive: {
-    backgroundColor: Colors.white,
-    ...Shadows.light,
+  modeButtonActive: {
+    backgroundColor: Colors.primary,
   },
-  tabText: {
+  modeButtonText: {
     fontSize: 12,
     fontWeight: '600',
     color: Colors.textSecondary,
   },
-  tabTextActive: {
-    color: Colors.primary,
-    fontWeight: 'bold',
+  modeButtonTextActive: {
+    color: Colors.white,
   },
   fanControlArea: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: Spacing.md,
   },
   fanStatus: {
     width: 80,
