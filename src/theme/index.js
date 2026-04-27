@@ -1,14 +1,16 @@
 export const Colors = {
   primary: '#FF6B00', // Vibrant Orange
   accent: '#FFC107', // Amber
-  background: '#F8F9FA',
+  background: '#F0F2F5', // Soft Mobile Gray
   card: '#FFFFFF',
-  textPrimary: '#1A1A1B',
-  textSecondary: '#6C757D',
-  success: '#28A745',
-  error: '#DC3545',
+  textPrimary: '#1C1C1E',
+  textSecondary: '#8E8E93',
+  success: '#34C759',
+  error: '#FF3B30',
   white: '#FFFFFF',
-  gray: '#E9ECEF',
+  gray: '#E5E5EA',
+  border: 'rgba(0,0,0,0.05)',
+  glass: 'rgba(255,255,255,0.8)',
 };
 
 export const Spacing = {
@@ -24,14 +26,21 @@ export const Shadows = {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 10,
+    shadowRadius: 8,
     elevation: 2,
   },
   medium: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 5,
+    shadowRadius: 16,
+    elevation: 4,
   },
+  orange: {
+    shadowColor: '#FF6B00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  }
 };

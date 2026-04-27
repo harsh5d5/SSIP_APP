@@ -6,14 +6,13 @@ import {
   TextInput,
   TouchableOpacity,
   SafeAreaView,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { ShieldCheck, Mail, Lock } from 'lucide-react-native';
 import { Colors, Spacing, Shadows } from '../theme';
 
-const { width } = Dimensions.get('window');
-
 const LoginScreen = ({ onLogin }) => {
+  const { width } = useWindowDimensions();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -23,7 +22,7 @@ const LoginScreen = ({ onLogin }) => {
       <View style={styles.circle1} />
       <View style={styles.circle2} />
 
-      <View style={styles.card}>
+      <View style={[styles.card, { width: Math.min(width * 0.85, 400) }]}>
         <View style={styles.iconContainer}>
           <ShieldCheck size={40} color={Colors.white} />
         </View>
@@ -90,7 +89,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   card: {
-    width: Math.min(width * 0.85, 400),
     backgroundColor: Colors.white,
     borderRadius: 32,
     padding: Spacing.xl,
