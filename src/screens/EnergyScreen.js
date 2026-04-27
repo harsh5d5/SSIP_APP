@@ -9,11 +9,14 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Zap, Activity, Battery, IndianRupee, Droplets } from 'lucide-react-native';
-import { Colors, Spacing, Shadows } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 const EnergyScreen = () => {
   const { width } = useWindowDimensions();
-  const [tankLevel, setTankLevel] = useState(72); // Percentage 0-100
+  const { colors, shadows, spacing } = useTheme();
+  const [tankLevel, setTankLevel] = useState(72);
+
+  const styles = createStyles(colors, shadows, spacing);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -24,34 +27,32 @@ const EnergyScreen = () => {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         
-        {/* Tank Level Sensor (NEW) */}
+        {/* Tank Level Sensor */}
         <Text style={styles.sectionTitle}>Tank Level Sensor</Text>
         <View style={styles.tankCard}>
           <View style={styles.tankInfo}>
-            <View style={styles.iconCircle}>
-              <Droplets size={24} color="#2196F3" />
+            <View style={[styles.iconCircle, { backgroundColor: colors.background }]}>
+              <Droplets size={24} color={colors.primary} />
             </View>
             <View>
               <Text style={styles.tankLabel}>Main Overhead Tank</Text>
               <Text style={styles.tankDetail}>Ultrasonic Sensor • Active</Text>
             </View>
-            <View style={styles.levelBadge}>
-              <Text style={styles.levelValue}>{tankLevel}%</Text>
+            <View style={[styles.levelBadge, { backgroundColor: colors.background }]}>
+              <Text style={[styles.levelValue, { color: colors.primary }]}>{tankLevel}%</Text>
             </View>
           </View>
 
           <View style={styles.tankVisualContainer}>
-            {/* The Tank Cylinder */}
-            <View style={styles.tankCylinder}>
-              <View style={[styles.tankFill, { height: `${tankLevel}%` }]} />
+            <View style={[styles.tankCylinder, { backgroundColor: colors.background, borderColor: colors.border }]}>
+              <View style={[styles.tankFill, { height: `${tankLevel}%`, backgroundColor: colors.primary }]} />
               <View style={styles.tankGlassEffect} />
               
-              {/* Measurement Ticks */}
               <View style={styles.ticksContainer}>
                 {[100, 75, 50, 25, 0].map(tick => (
                   <View key={tick} style={styles.tickRow}>
-                    <View style={styles.tickLine} />
-                    <Text style={styles.tickText}>{tick}%</Text>
+                    <View style={[styles.tickLine, { backgroundColor: colors.border }]} />
+                    <Text style={[styles.tickText, { color: colors.textSecondary }]}>{tick}%</Text>
                   </View>
                 ))}
               </View>
@@ -60,10 +61,10 @@ const EnergyScreen = () => {
             <View style={styles.tankActionArea}>
               <Text style={styles.capacityText}>Estimated: {(tankLevel * 10).toFixed(0)} Liters</Text>
               <TouchableOpacity 
-                style={styles.refreshBtn}
+                style={[styles.refreshBtn, { backgroundColor: colors.background }]}
                 onPress={() => setTankLevel(Math.floor(Math.random() * 100))}
               >
-                <Text style={styles.refreshText}>Refresh Data</Text>
+                <Text style={[styles.refreshText, { color: colors.textSecondary }]}>Refresh Data</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -77,15 +78,15 @@ const EnergyScreen = () => {
               <Text style={styles.liveValue}>1.24 <Text style={styles.unit}>kW</Text></Text>
               <Text style={styles.chartSubtitle}>Current usage: Stable</Text>
             </View>
-            <View style={styles.liveBadgeSmall}>
-              <View style={styles.pulseDot} />
-              <Text style={styles.liveBadgeText}>LIVE</Text>
+            <View style={[styles.liveBadgeSmall, { backgroundColor: colors.background }]}>
+              <View style={[styles.pulseDot, { backgroundColor: '#FF3B30' }]} />
+              <Text style={[styles.liveBadgeText, { color: '#FF3B30' }]}>LIVE</Text>
             </View>
           </View>
           
           <View style={styles.simpleGraphPlaceholder}>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: '65%' }]} />
+            <View style={[styles.progressTrack, { backgroundColor: colors.background }]}>
+              <View style={[styles.progressFill, { width: '65%', backgroundColor: colors.primary }]} />
             </View>
             <Text style={styles.placeholderText}>Load: 65% of Solar Capacity</Text>
           </View>
@@ -93,17 +94,17 @@ const EnergyScreen = () => {
 
         {/* Detailed Stats Grid */}
         <View style={styles.detailsGrid}>
-          <DetailItem label="Voltage" value="228.4" unit="V" icon={Activity} color="#2196F3" />
-          <DetailItem label="Current" value="5.4" unit="A" icon={Zap} color={Colors.primary} />
-          <DetailItem label="Battery" value="82" unit="%" icon={Battery} color={Colors.success} />
+          <DetailCard label="Voltage" value="228.4" unit="V" icon={Activity} color={colors.primary} />
+          <DetailCard label="Current" value="5.4" unit="A" icon={Zap} color="#FFD60A" />
+          <DetailCard label="Battery" value="82" unit="%" icon={Battery} color="#34C759" />
         </View>
 
         {/* Cost Estimation Card */}
         <Text style={styles.sectionTitle}>Cost & Savings</Text>
         <View style={styles.costCard}>
           <View style={styles.costHeader}>
-            <View style={styles.costIconCircle}>
-              <IndianRupee size={20} color={Colors.white} />
+            <View style={[styles.costIconCircle, { backgroundColor: '#34C759' }]}>
+              <IndianRupee size={20} color="#FFFFFF" />
             </View>
             <View>
               <Text style={styles.costLabel}>Estimated Monthly Bill</Text>
@@ -118,77 +119,94 @@ const EnergyScreen = () => {
   );
 };
 
-const DetailItem = ({ label, value, unit, icon: Icon, color }) => (
-  <View style={styles.detailCard}>
-    <View style={[styles.detailIconBg, { backgroundColor: `${color}15` }]}>
-      <Icon size={18} color={color} />
+const DetailCard = ({ label, value, unit, icon: Icon, color }) => {
+  const { colors, shadows } = useTheme();
+  return (
+    <View style={{
+      flex: 1,
+      backgroundColor: colors.card,
+      borderRadius: 24,
+      padding: 16,
+      alignItems: 'center',
+      ...shadows.light,
+      marginBottom: 16
+    }}>
+      <View style={{
+        width: 36,
+        height: 36,
+        borderRadius: 12,
+        backgroundColor: `${color}15`,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
+      }}>
+        <Icon size={18} color={color} />
+      </View>
+      <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.textPrimary }}>{value} <Text style={{ fontSize: 10, color: colors.textSecondary }}>{unit}</Text></Text>
+      <Text style={{ fontSize: 10, color: colors.textSecondary, fontWeight: '600' }}>{label}</Text>
     </View>
-    <Text style={styles.detailValue}>{value} <Text style={styles.detailUnit}>{unit}</Text></Text>
-    <Text style={styles.detailLabel}>{label}</Text>
-  </View>
-);
+  );
+};
 
-const styles = StyleSheet.create({
+const createStyles = (colors, shadows, spacing) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   header: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    marginBottom: Spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl + 10, // Safe Zone Fix
+    marginBottom: spacing.md,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   headerSubtitle: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   scrollContent: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-    marginTop: Spacing.lg,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+    marginTop: spacing.lg,
   },
   tankCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     borderRadius: 28,
-    padding: Spacing.lg,
-    ...Shadows.light,
-    marginBottom: Spacing.md,
+    padding: spacing.lg,
+    ...shadows.light,
+    marginBottom: spacing.md,
   },
   tankInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
+    gap: spacing.md,
+    marginBottom: spacing.xl,
   },
   iconCircle: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#E3F2FD',
     justifyContent: 'center',
     alignItems: 'center',
   },
   tankLabel: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   tankDetail: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   levelBadge: {
-    backgroundColor: '#E3F2FD',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
@@ -197,29 +215,25 @@ const styles = StyleSheet.create({
   levelValue: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#2196F3',
   },
   tankVisualContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.xl,
+    gap: spacing.xl,
   },
   tankCylinder: {
     width: 80,
     height: 160,
-    backgroundColor: '#F2F2F7',
     borderRadius: 12,
     overflow: 'hidden',
     position: 'relative',
     borderWidth: 2,
-    borderColor: '#E5E5EA',
   },
   tankFill: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#2196F3',
   },
   tankGlassEffect: {
     position: 'absolute',
@@ -243,11 +257,9 @@ const styles = StyleSheet.create({
   tickLine: {
     width: 6,
     height: 1,
-    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   tickText: {
     fontSize: 8,
-    color: Colors.textSecondary,
     fontWeight: '600',
   },
   tankActionArea: {
@@ -259,10 +271,9 @@ const styles = StyleSheet.create({
   capacityText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   refreshBtn: {
-    backgroundColor: '#F2F2F7',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 12,
@@ -270,39 +281,37 @@ const styles = StyleSheet.create({
   refreshText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: Colors.textSecondary,
   },
   chartCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     borderRadius: 32,
-    padding: Spacing.md,
-    ...Shadows.light,
-    marginBottom: Spacing.xl,
+    padding: spacing.md,
+    ...shadows.light,
+    marginBottom: spacing.xl,
   },
   chartHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    padding: Spacing.md,
+    padding: spacing.md,
   },
   liveValue: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   unit: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   chartSubtitle: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 2,
   },
   liveBadgeSmall: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F2F2F7',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -312,97 +321,61 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: Colors.error,
   },
   liveBadgeText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: Colors.error,
   },
   simpleGraphPlaceholder: {
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
   },
   placeholderText: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 8,
   },
   progressTrack: {
     width: '100%',
     height: 8,
-    backgroundColor: '#F2F2F7',
     borderRadius: 4,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: Colors.primary,
   },
   detailsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: Spacing.xl,
-    gap: Spacing.md,
-  },
-  detailCard: {
-    flex: 1,
-    backgroundColor: Colors.white,
-    borderRadius: 24,
-    padding: Spacing.md,
-    alignItems: 'center',
-    ...Shadows.light,
-  },
-  detailIconBg: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  detailValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-  },
-  detailUnit: {
-    fontSize: 10,
-    color: Colors.textSecondary,
-  },
-  detailLabel: {
-    fontSize: 10,
-    color: Colors.textSecondary,
-    fontWeight: '600',
+    marginBottom: spacing.xl,
   },
   costCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     borderRadius: 28,
-    padding: Spacing.lg,
-    ...Shadows.light,
+    padding: spacing.lg,
+    ...shadows.light,
   },
   costHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
+    gap: spacing.md,
   },
   costIconCircle: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: Colors.success,
     justifyContent: 'center',
     alignItems: 'center',
   },
   costLabel: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '600',
   },
   costValue: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
 });
 

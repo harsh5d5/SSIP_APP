@@ -1,20 +1,23 @@
 import React from 'react';
 import { StyleSheet, View, Text, Switch } from 'react-native';
 import { Thermometer, Droplets } from 'lucide-react-native';
-import { Colors, Spacing, Shadows } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 const RoomCard = ({ name, devices, temp, humidity, icon: Icon, isActive }) => {
+  const { colors, shadows, spacing } = useTheme();
+  const styles = createStyles(colors, shadows, spacing);
+
   return (
     <View style={styles.card}>
       <View style={styles.topRow}>
-        <View style={[styles.iconWrapper, { backgroundColor: isActive ? `${Colors.primary}15` : Colors.background }]}>
-          <Icon size={24} color={isActive ? Colors.primary : Colors.textSecondary} />
+        <View style={[styles.iconWrapper, { backgroundColor: isActive ? `${colors.primary}15` : colors.background }]}>
+          <Icon size={24} color={isActive ? colors.primary : colors.textSecondary} />
         </View>
         <Switch
           value={isActive}
           onValueChange={() => {}}
-          trackColor={{ false: Colors.gray, true: `${Colors.primary}50` }}
-          thumbColor={isActive ? Colors.primary : Colors.white}
+          trackColor={{ false: colors.gray, true: `${colors.primary}50` }}
+          thumbColor={isActive ? colors.primary : colors.white}
         />
       </View>
       
@@ -25,11 +28,11 @@ const RoomCard = ({ name, devices, temp, humidity, icon: Icon, isActive }) => {
 
       <View style={styles.bottomRow}>
         <View style={styles.infoItem}>
-          <Thermometer size={14} color={Colors.textSecondary} />
+          <Thermometer size={14} color={colors.textSecondary} />
           <Text style={styles.infoText}>{temp}</Text>
         </View>
         <View style={styles.infoItem}>
-          <Droplets size={14} color={Colors.textSecondary} />
+          <Droplets size={14} color={colors.textSecondary} />
           <Text style={styles.infoText}>{humidity}</Text>
         </View>
       </View>
@@ -37,15 +40,15 @@ const RoomCard = ({ name, devices, temp, humidity, icon: Icon, isActive }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors, shadows, spacing) => StyleSheet.create({
   card: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     borderRadius: 24,
-    padding: Spacing.md,
+    padding: spacing.md,
     width: '48%',
     height: 160,
     justifyContent: 'space-between',
-    ...Shadows.light,
+    ...shadows.light,
   },
   topRow: {
     flexDirection: 'row',
@@ -53,24 +56,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconWrapper: {
-    padding: Spacing.sm,
+    padding: spacing.sm,
     borderRadius: 12,
   },
   middleRow: {
-    marginTop: Spacing.sm,
+    marginTop: spacing.sm,
   },
   name: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   devices: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   bottomRow: {
     flexDirection: 'row',
-    gap: Spacing.md,
+    gap: spacing.md,
   },
   infoItem: {
     flexDirection: 'row',
@@ -80,7 +83,7 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
 });
 

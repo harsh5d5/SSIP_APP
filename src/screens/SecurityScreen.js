@@ -18,14 +18,17 @@ import {
   ChevronRight,
   Eye,
 } from 'lucide-react-native';
-import { Colors, Spacing, Shadows } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 const SecurityScreen = () => {
   const { width } = useWindowDimensions();
+  const { colors, shadows, spacing } = useTheme();
   
   // Motion Light State
   const [motionLightOn, setMotionLightOn] = useState(true);
   const [isMotionDetected, setIsMotionDetected] = useState(true);
+
+  const styles = createStyles(colors, shadows, spacing);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -38,18 +41,18 @@ const SecurityScreen = () => {
         {/* Main Status Badge */}
         <View style={styles.mainStatusCard}>
           <View style={styles.shieldWrapper}>
-            <ShieldCheck size={60} color={Colors.white} />
+            <ShieldCheck size={60} color="#FFFFFF" />
           </View>
           <Text style={styles.statusTitle}>System Armed</Text>
           <Text style={styles.statusText}>Your home is fully protected</Text>
         </View>
 
-        {/* Motion Light Control (NEW) */}
+        {/* Motion Light Control */}
         <Text style={styles.sectionTitle}>Smart Lighting</Text>
         <View style={styles.controlCard}>
           <View style={styles.cardHeader}>
-            <View style={[styles.iconCircle, { backgroundColor: '#F2F2F7' }]}>
-              <Eye size={20} color={Colors.primary} />
+            <View style={[styles.iconCircle, { backgroundColor: colors.background }]}>
+              <Eye size={20} color={colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.cardTitle}>Motion Light</Text>
@@ -58,16 +61,16 @@ const SecurityScreen = () => {
             <Switch
               value={motionLightOn}
               onValueChange={setMotionLightOn}
-              trackColor={{ false: '#D1D1D6', true: Colors.primary + '50' }}
-              thumbColor={motionLightOn ? Colors.primary : '#FFFFFF'}
+              trackColor={{ false: colors.gray, true: colors.primary + '50' }}
+              thumbColor={motionLightOn ? colors.primary : colors.white}
             />
           </View>
 
           {motionLightOn && (
             <View style={styles.motionStatusArea}>
-              <View style={[styles.motionIndicator, { backgroundColor: isMotionDetected ? Colors.error + '15' : Colors.success + '15' }]}>
-                <View style={[styles.pulseDot, { backgroundColor: isMotionDetected ? Colors.error : Colors.success }]} />
-                <Text style={[styles.motionStatusText, { color: isMotionDetected ? Colors.error : Colors.success }]}>
+              <View style={[styles.motionIndicator, { backgroundColor: isMotionDetected ? '#FF3B3015' : '#34C75915' }]}>
+                <View style={[styles.pulseDot, { backgroundColor: isMotionDetected ? '#FF3B30' : '#34C759' }]} />
+                <Text style={[styles.motionStatusText, { color: isMotionDetected ? '#FF3B30' : '#34C759' }]}>
                   {isMotionDetected ? 'MOTION DETECTED' : 'CLEAR'}
                 </Text>
               </View>
@@ -84,7 +87,7 @@ const SecurityScreen = () => {
         {/* Alerts Section */}
         <View style={styles.alertBanner}>
           <View style={styles.alertIconBg}>
-            <AlertTriangle size={20} color={Colors.white} />
+            <AlertTriangle size={20} color="#FFFFFF" />
           </View>
           <View style={styles.alertTextContainer}>
             <Text style={styles.alertTitle}>Recent Activity Detected</Text>
@@ -108,7 +111,7 @@ const SecurityScreen = () => {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Security Log</Text>
           <TouchableOpacity>
-            <History size={20} color={Colors.primary} />
+            <History size={20} color={colors.primary} />
           </TouchableOpacity>
         </View>
         
@@ -125,56 +128,91 @@ const SecurityScreen = () => {
   );
 };
 
-const LockCard = ({ label, status, isLocked, width }) => (
-  <TouchableOpacity style={[styles.lockCard, { width: (width - 64) / 2 }]}>
-    <View style={[styles.lockIconCircle, { backgroundColor: isLocked ? '#E3F2FD' : '#FFF3E0' }]}>
-      {isLocked ? <Lock size={20} color="#2196F3" /> : <Unlock size={20} color={Colors.primary} />}
-    </View>
-    <Text style={styles.lockLabel}>{label}</Text>
-    <Text style={[styles.lockStatusText, { color: isLocked ? '#2196F3' : Colors.primary }]}>{status}</Text>
-  </TouchableOpacity>
-);
+const LockCard = ({ label, status, isLocked, width }) => {
+  const { colors, shadows } = useTheme();
+  return (
+    <TouchableOpacity style={[
+      { 
+        backgroundColor: colors.card,
+        borderRadius: 24,
+        padding: 16,
+        width: (width - 64) / 2,
+        ...shadows.light,
+        marginBottom: 16
+      }
+    ]}>
+      <View style={[{ 
+        width: 44, 
+        height: 44, 
+        borderRadius: 14, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        marginBottom: 12,
+        backgroundColor: isLocked ? colors.background : colors.background
+      }]}>
+        {isLocked ? <Lock size={20} color={colors.primary} /> : <Unlock size={20} color={colors.textSecondary} />}
+      </View>
+      <Text style={{ fontSize: 14, fontWeight: 'bold', color: colors.textPrimary }}>{label}</Text>
+      <Text style={{ fontSize: 12, fontWeight: '600', marginTop: 2, color: isLocked ? colors.primary : colors.textSecondary }}>{status}</Text>
+    </TouchableOpacity>
+  );
+};
 
-const LogItem = ({ time, event, location, type }) => (
-  <View style={styles.logItem}>
-    <View style={[styles.logIndicator, { backgroundColor: type === 'warning' ? Colors.error : type === 'success' ? Colors.success : Colors.primary }]} />
-    <View style={styles.logTextWrapper}>
-      <Text style={styles.logEvent}>{event}</Text>
-      <Text style={styles.logDetail}>{location} • {time}</Text>
+const LogItem = ({ time, event, location, type }) => {
+  const { colors } = useTheme();
+  return (
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    }}>
+      <View style={{
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        marginRight: 12,
+        backgroundColor: type === 'warning' ? '#FF3B30' : type === 'success' ? '#34C759' : colors.primary 
+      }} />
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: colors.textPrimary }}>{event}</Text>
+        <Text style={{ fontSize: 11, color: colors.textSecondary }}>{location} • {time}</Text>
+      </View>
+      <ChevronRight size={16} color={colors.textSecondary} />
     </View>
-    <ChevronRight size={16} color={Colors.textSecondary} />
-  </View>
-);
+  );
+};
 
-const styles = StyleSheet.create({
+const createStyles = (colors, shadows, spacing) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   header: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    marginBottom: Spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl + 10, // Safe Zone Fix
+    marginBottom: spacing.md,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   headerSubtitle: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   scrollContent: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
   mainStatusCard: {
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: 32,
-    padding: Spacing.xl,
+    padding: spacing.xl,
     alignItems: 'center',
-    ...Shadows.orange,
-    marginBottom: Spacing.xl,
+    ...shadows.blue,
+    marginBottom: spacing.xl,
   },
   shieldWrapper: {
     width: 100,
@@ -183,48 +221,47 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.md,
+    marginBottom: spacing.md,
   },
   statusTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: Colors.white,
+    color: '#FFFFFF',
   },
   statusText: {
     fontSize: 14,
     color: 'rgba(255,255,255,0.8)',
   },
   controlCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     borderRadius: 28,
-    padding: Spacing.lg,
-    ...Shadows.light,
-    marginBottom: Spacing.xl,
+    padding: spacing.lg,
+    ...shadows.light,
+    marginBottom: spacing.xl,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
+    gap: spacing.md,
   },
   iconCircle: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#FFF3E0',
     justifyContent: 'center',
     alignItems: 'center',
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   cardSubtitle: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   motionStatusArea: {
-    marginTop: Spacing.lg,
+    marginTop: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -250,129 +287,79 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 10,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: colors.background,
   },
   testBtnText: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   alertBanner: {
-    backgroundColor: '#FFF5F5',
+    backgroundColor: colors.isDarkMode ? '#FF3B3020' : '#FFF5F5',
     borderRadius: 20,
-    padding: Spacing.md,
+    padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#FFE3E3',
-    marginBottom: Spacing.xl,
+    borderColor: colors.isDarkMode ? '#FF3B3050' : '#FFE3E3',
+    marginBottom: spacing.xl,
   },
   alertIconBg: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: Colors.error,
+    backgroundColor: '#FF3B30',
     justifyContent: 'center',
     alignItems: 'center',
   },
   alertTextContainer: {
     flex: 1,
-    marginLeft: Spacing.md,
+    marginLeft: spacing.md,
   },
   alertTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: Colors.error,
+    color: '#FF3B30',
   },
   alertSubtitle: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   viewBtn: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.white,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
-    ...Shadows.light,
+    ...shadows.light,
   },
   viewBtnText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: Colors.error,
+    color: '#FF3B30',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: Spacing.xl,
-    marginBottom: Spacing.md,
+    marginTop: spacing.xl,
+    marginBottom: spacing.md,
   },
   lockGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: Spacing.md,
-  },
-  lockCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 24,
-    padding: Spacing.md,
-    ...Shadows.light,
-  },
-  lockIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  lockLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-  },
-  lockStatusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 2,
   },
   logContainer: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     borderRadius: 24,
-    padding: Spacing.md,
-    ...Shadows.light,
-  },
-  logItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  logIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 12,
-  },
-  logTextWrapper: {
-    flex: 1,
-  },
-  logEvent: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-  },
-  logDetail: {
-    fontSize: 11,
-    color: Colors.textSecondary,
+    padding: spacing.md,
+    ...shadows.light,
   },
 });
 

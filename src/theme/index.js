@@ -1,7 +1,7 @@
 export const Colors = {
-  primary: '#FF6B00', // Vibrant Orange
-  accent: '#FFC107', // Amber
-  background: '#F0F2F5', // Soft Mobile Gray
+  primary: '#007AFF', // Premium iOS/Samsung Blue
+  accent: '#5AC8FA', // Sky Blue
+  background: '#F2F2F7', // Clean iOS Gray
   card: '#FFFFFF',
   textPrimary: '#1C1C1E',
   textSecondary: '#8E8E93',
@@ -36,8 +36,8 @@ export const Shadows = {
     shadowRadius: 16,
     elevation: 4,
   },
-  orange: {
-    shadowColor: '#FF6B00',
+  blue: {
+    shadowColor: '#007AFF',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,

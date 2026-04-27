@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home, Zap, Shield, Settings2, Cpu } from 'lucide-react-native';
-import { Colors } from './src/theme';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 
 // Screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -15,6 +15,8 @@ import SystemScreen from './src/screens/SystemScreen';
 const Tab = createBottomTabNavigator();
 
 function TabNavigator() {
+  const { colors } = useTheme();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -25,12 +27,12 @@ function TabNavigator() {
           if (route.name === 'Energy') return <Zap size={size} color={color} />;
           if (route.name === 'System') return <Cpu size={size} color={color} />;
         },
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textSecondary,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: Colors.white,
+          backgroundColor: colors.card,
           borderTopWidth: 1,
-          borderTopColor: Colors.border,
+          borderTopColor: colors.border,
           height: 65,
           paddingBottom: 10,
         },
@@ -46,8 +48,9 @@ function TabNavigator() {
   );
 }
 
-export default function App() {
+function AppContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { colors } = useTheme();
 
   if (!isLoggedIn) {
     return <LoginScreen onLogin={() => setIsLoggedIn(true)} />;
@@ -57,5 +60,13 @@ export default function App() {
     <NavigationContainer>
       <TabNavigator />
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }

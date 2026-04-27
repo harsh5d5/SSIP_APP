@@ -24,9 +24,10 @@ import {
   X,
   CheckCircle2,
 } from 'lucide-react-native';
-import { Colors, Spacing, Shadows } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 const SystemScreen = () => {
+  const { colors, shadows, spacing, isDarkMode } = useTheme();
   const [isModalVisible, setModalVisible] = useState(false);
   const [newDeviceName, setNewDeviceName] = useState('');
   const [selectedType, setSelectedType] = useState('Smart RGB LED Strip');
@@ -47,17 +48,17 @@ const SystemScreen = () => {
     'MultiLoad 1 to 20'
   ];
 
+  const styles = createStyles(colors, shadows, spacing, isDarkMode);
+
   const handleAddDevice = () => {
     if (newDeviceName.trim() === '') return;
-    
     const newDevice = {
       id: Date.now().toString(),
       name: newDeviceName,
       detail: selectedType,
-      icon: Zap, // Default icon for new devices
+      icon: Zap,
       status: 'Online',
     };
-    
     setDevices([newDevice, ...devices]);
     setModalVisible(false);
     setNewDeviceName('');
@@ -75,7 +76,7 @@ const SystemScreen = () => {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Automations</Text>
           <TouchableOpacity style={styles.addButton}>
-            <Plus size={18} color={Colors.primary} />
+            <Plus size={18} color={colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -98,12 +99,6 @@ const SystemScreen = () => {
             icon={Clock} 
             active={false} 
           />
-          <AutomationItem 
-            title="Door Unlocked" 
-            subtitle="Notify on phone" 
-            icon={Smartphone} 
-            active={true} 
-          />
         </View>
 
         {/* Connected Devices Section */}
@@ -116,7 +111,7 @@ const SystemScreen = () => {
             style={styles.addButton}
             onPress={() => setModalVisible(true)}
           >
-            <Plus size={18} color={Colors.primary} />
+            <Plus size={18} color={colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -133,8 +128,8 @@ const SystemScreen = () => {
         </View>
 
         <View style={styles.systemInfoCard}>
-          <View style={styles.infoIconBg}>
-            <Cpu size={24} color={Colors.primary} />
+          <View style={[styles.infoIconBg, { backgroundColor: colors.background }]}>
+            <Cpu size={24} color={colors.primary} />
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.infoTitle}>Raspberry Pi 5 Master</Text>
@@ -157,7 +152,7 @@ const SystemScreen = () => {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add New Device</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <X size={24} color={Colors.textSecondary} />
+                <X size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -167,7 +162,7 @@ const SystemScreen = () => {
               placeholder="e.g. Living Room RGB Strip"
               value={newDeviceName}
               onChangeText={setNewDeviceName}
-              placeholderTextColor={Colors.textSecondary}
+              placeholderTextColor={colors.textSecondary}
             />
 
             <Text style={styles.inputLabel}>Device Category</Text>
@@ -181,7 +176,7 @@ const SystemScreen = () => {
                   <Text style={[styles.typeOptionText, selectedType === type && styles.typeOptionTextSelected]}>
                     {type}
                   </Text>
-                  {selectedType === type && <CheckCircle2 size={20} color={Colors.primary} />}
+                  {selectedType === type && <CheckCircle2 size={20} color={colors.primary} />}
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -196,280 +191,241 @@ const SystemScreen = () => {
   );
 };
 
+const AutomationItem = ({ title, subtitle, icon: Icon, active }) => {
+  const { colors, spacing } = useTheme();
+  return (
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    }}>
+      <View style={{
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: active ? `${colors.primary}15` : colors.background
+      }}>
+        <Icon size={20} color={active ? colors.primary : colors.textSecondary} />
+      </View>
+      <View style={{ flex: 1, marginLeft: 16 }}>
+        <Text style={{ fontSize: 15, fontWeight: 'bold', color: colors.textPrimary }}>{title}</Text>
+        <Text style={{ fontSize: 11, color: colors.textSecondary }}>{subtitle}</Text>
+      </View>
+      <Switch 
+        value={active}
+        trackColor={{ false: colors.gray, true: colors.primary + '50' }}
+        thumbColor={active ? colors.primary : colors.white}
+      />
+    </View>
+  );
+};
 
-const AutomationItem = ({ title, subtitle, icon: Icon, active }) => (
-  <View style={styles.autoItem}>
-    <View style={[styles.autoIconBg, { backgroundColor: active ? `${Colors.primary}15` : '#F2F2F7' }]}>
-      <Icon size={20} color={active ? Colors.primary : Colors.textSecondary} />
+const DeviceItem = ({ name, detail, icon: Icon, status }) => {
+  const { colors } = useTheme();
+  return (
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    }}>
+      <View style={{
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: colors.background,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        <Icon size={20} color={colors.textPrimary} />
+      </View>
+      <View style={{ flex: 1, marginLeft: 16 }}>
+        <Text style={{ fontSize: 15, fontWeight: 'bold', color: colors.textPrimary }}>{name}</Text>
+        <Text style={{ fontSize: 11, color: colors.textSecondary }}>{detail}</Text>
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: status === 'Online' ? '#34C759' : '#FF3B30' }} />
+        <Text style={{ fontSize: 11, fontWeight: 'bold', color: status === 'Online' ? '#34C759' : '#FF3B30' }}>{status}</Text>
+        <ChevronRight size={16} color={colors.textSecondary} />
+      </View>
     </View>
-    <View style={styles.autoTextWrapper}>
-      <Text style={styles.autoTitle}>{title}</Text>
-      <Text style={styles.autoSubtitle}>{subtitle}</Text>
-    </View>
-    <Switch 
-      value={active}
-      trackColor={{ false: Colors.gray, true: `${Colors.primary}50` }}
-      thumbColor={active ? Colors.primary : Colors.white}
-    />
-  </View>
-);
+  );
+};
 
-const DeviceItem = ({ name, detail, icon: Icon, status }) => (
-  <View style={styles.deviceItem}>
-    <View style={styles.deviceIconBg}>
-      <Icon size={20} color={Colors.textPrimary} />
-    </View>
-    <View style={styles.deviceTextWrapper}>
-      <Text style={styles.deviceName}>{name}</Text>
-      <Text style={styles.deviceDetail}>{detail}</Text>
-    </View>
-    <View style={styles.statusRow}>
-      <View style={[styles.statusDot, { backgroundColor: status === 'Online' ? Colors.success : Colors.error }]} />
-      <Text style={[styles.statusLabel, { color: status === 'Online' ? Colors.success : Colors.error }]}>{status}</Text>
-      <ChevronRight size={16} color={Colors.textSecondary} />
-    </View>
-  </View>
-);
-
-const styles = StyleSheet.create({
+const createStyles = (colors, shadows, spacing, isDarkMode) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   header: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    marginBottom: Spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl + 10, // Safe Zone Fix
+    marginBottom: spacing.md,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   headerSubtitle: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   scrollContent: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: Spacing.xl,
-    marginBottom: Spacing.md,
+    marginTop: spacing.xl,
+    marginBottom: spacing.md,
   },
   addButton: {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
-    ...Shadows.light,
+    ...shadows.light,
   },
   automationList: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     borderRadius: 24,
-    padding: Spacing.sm,
-    ...Shadows.light,
-  },
-  autoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  autoIconBg: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  autoTextWrapper: {
-    flex: 1,
-    marginLeft: Spacing.md,
-  },
-  autoTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-  },
-  autoSubtitle: {
-    fontSize: 11,
-    color: Colors.textSecondary,
+    padding: spacing.sm,
+    ...shadows.light,
   },
   deviceCount: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: Colors.success,
-    backgroundColor: `${Colors.success}15`,
+    color: '#34C759',
+    backgroundColor: '#34C75915',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
   deviceList: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     borderRadius: 24,
-    padding: Spacing.sm,
-    ...Shadows.light,
-    marginBottom: Spacing.xl,
-  },
-  deviceItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  deviceIconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#F2F2F7',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deviceTextWrapper: {
-    flex: 1,
-    marginLeft: Spacing.md,
-  },
-  deviceName: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-  },
-  deviceDetail: {
-    fontSize: 11,
-    color: Colors.textSecondary,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  statusLabel: {
-    fontSize: 11,
-    fontWeight: 'bold',
+    padding: spacing.sm,
+    ...shadows.light,
+    marginBottom: spacing.xl,
   },
   systemInfoCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     borderRadius: 24,
-    padding: Spacing.lg,
+    padding: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    ...Shadows.light,
+    ...shadows.light,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   infoIconBg: {
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: '#FFF3E0',
     justifyContent: 'center',
     alignItems: 'center',
   },
   infoTextContainer: {
-    marginLeft: Spacing.md,
+    marginLeft: spacing.md,
   },
   infoTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   infoSubtitle: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
-    padding: Spacing.xl,
+    padding: spacing.xl,
     height: '80%',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    marginBottom: spacing.xl,
   },
   modalTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
   },
   textInput: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     height: 56,
     borderRadius: 16,
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: spacing.md,
     fontSize: 16,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xl,
-    ...Shadows.light,
+    color: colors.textPrimary,
+    marginBottom: spacing.xl,
+    ...shadows.light,
   },
   typeList: {
     flex: 1,
-    marginBottom: Spacing.xl,
+    marginBottom: spacing.xl,
   },
   typeOption: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: Colors.white,
-    padding: Spacing.md,
+    backgroundColor: colors.card,
+    padding: spacing.md,
     borderRadius: 16,
-    marginBottom: Spacing.sm,
-    ...Shadows.light,
+    marginBottom: spacing.sm,
+    ...shadows.light,
   },
   typeOptionSelected: {
     borderWidth: 2,
-    borderColor: Colors.primary,
+    borderColor: colors.primary,
   },
   typeOptionText: {
     fontSize: 15,
     fontWeight: '600',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   typeOptionTextSelected: {
-    color: Colors.primary,
+    color: colors.primary,
   },
   saveButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     height: 56,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    ...Shadows.medium,
+    ...shadows.blue,
   },
   saveButtonText: {
-    color: Colors.white,
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },

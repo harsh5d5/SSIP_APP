@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   Zap,
   Calendar,
@@ -23,12 +24,13 @@ import {
   Search,
   Layers,
 } from 'lucide-react-native';
-import { Colors, Spacing, Shadows } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 import StatCard from '../components/StatCard';
 import RoomCard from '../components/RoomCard';
 
 const DashboardScreen = () => {
   const { width } = useWindowDimensions();
+  const { colors, shadows, spacing, isDarkMode, toggleTheme } = useTheme();
   
   // MultiLoad State (20 Toggles)
   const [loads, setLoads] = useState(Array(20).fill(false).map((_, i) => ({
@@ -42,18 +44,27 @@ const DashboardScreen = () => {
     ));
   };
 
+  const styles = createStyles(colors, shadows, spacing);
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* Premium Glass Header */}
       <View style={styles.topHeader}>
-        <View style={styles.profileCircle}>
+        <LinearGradient
+          colors={isDarkMode ? ['#0A84FF', '#5AC8FA'] : ['#007AFF', '#5AC8FA']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.profileCircle}
+        >
           <Text style={styles.profileInitial}>A</Text>
-        </View>
+        </LinearGradient>
+        
         <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.headerIcon}>
-            <Search size={20} color={Colors.textPrimary} />
+          <TouchableOpacity style={[styles.headerIcon, shadows.blue]} onPress={toggleTheme}>
+            {isDarkMode ? <Sun size={20} color={colors.primary} /> : <Moon size={20} color={colors.primary} />}
           </TouchableOpacity>
-          <TouchableOpacity style={styles.headerIcon}>
-            <Plus size={20} color={Colors.textPrimary} />
+          <TouchableOpacity style={[styles.headerIcon, shadows.blue]}>
+            <Plus size={20} color={colors.primary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -69,20 +80,20 @@ const DashboardScreen = () => {
         {/* Top Overview Stats */}
         <View style={styles.overviewRow}>
           <View style={[styles.miniStat, { width: (width - 64) / 3 }]}>
-            <Thermometer size={16} color={Colors.primary} />
+            <Thermometer size={16} color={colors.primary} />
             <Text style={styles.miniStatValue}>21.4°C</Text>
           </View>
           <View style={[styles.miniStat, { width: (width - 64) / 3 }]}>
-            <Zap size={16} color={Colors.accent} />
+            <Zap size={16} color="#FFD60A" />
             <Text style={styles.miniStatValue}>1.24 kW</Text>
           </View>
           <View style={[styles.miniStat, { width: (width - 64) / 3 }]}>
-            <Droplets size={16} color="#007AFF" />
+            <Droplets size={16} color="#0A84FF" />
             <Text style={styles.miniStatValue}>48%</Text>
           </View>
         </View>
 
-        {/* MultiLoad 1 to 20 Master Hub (NEW) */}
+        {/* MultiLoad 1 to 20 Master Hub */}
         <View style={styles.sectionHeader}>
           <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
             <Text style={styles.sectionTitle}>Relay Master Board</Text>
@@ -91,7 +102,7 @@ const DashboardScreen = () => {
             </View>
           </View>
           <TouchableOpacity>
-            <Layers size={18} color={Colors.primary} />
+            <Layers size={18} color={colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -111,7 +122,7 @@ const DashboardScreen = () => {
                 <Text style={[styles.relayNumber, load.active && styles.relayNumberActive]}>
                   {load.id}
                 </Text>
-                <View style={[styles.relayIndicator, { backgroundColor: load.active ? Colors.white : '#D1D1D6' }]} />
+                <View style={[styles.relayIndicator, { backgroundColor: load.active ? colors.white : colors.gray }]} />
               </TouchableOpacity>
             ))}
           </View>
@@ -146,7 +157,7 @@ const DashboardScreen = () => {
         {/* Security Summary Badge */}
         <TouchableOpacity style={styles.securityBanner}>
           <View style={styles.securityIconBg}>
-            <ShieldCheck size={24} color={Colors.white} />
+            <ShieldCheck size={24} color={colors.white} />
           </View>
           <View style={styles.securityTextContainer}>
             <Text style={styles.securityTitle}>Security System Active</Text>
@@ -164,112 +175,106 @@ const DashboardScreen = () => {
   );
 };
 
-const QuickActionIcon = ({ icon: Icon, label, active }) => (
-  <TouchableOpacity style={[styles.qaContainer, active && styles.qaActive]}>
-    <View style={[styles.qaIconWrapper, active && styles.qaIconActive]}>
-      <Icon size={24} color={active ? Colors.white : Colors.textPrimary} />
-    </View>
-    <Text style={[styles.qaLabel, active && styles.qaLabelActive]}>{label}</Text>
-  </TouchableOpacity>
-);
-
-const styles = StyleSheet.create({
+const createStyles = (colors, shadows, spacing) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   topHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    marginBottom: Spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl + 10, // Added extra padding for Android Status Bar
+    paddingBottom: spacing.md,
+    backgroundColor: colors.glass,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   profileCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.primary,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    ...Shadows.light,
+    ...shadows.blue,
   },
   profileInitial: {
-    color: Colors.white,
+    color: '#FFFFFF',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   headerActions: {
     flexDirection: 'row',
-    gap: Spacing.sm,
+    gap: spacing.sm,
   },
   headerIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.white,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
-    ...Shadows.light,
   },
   scrollContent: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
   },
   welcomeContainer: {
-    marginBottom: Spacing.lg,
+    marginBottom: spacing.lg,
   },
   greetingText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   nameText: {
     fontSize: 28,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   nameHighlight: {
-    color: Colors.primary,
+    color: colors.primary,
   },
   statusSubtitle: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 4,
   },
   overviewRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: Spacing.xl,
+    marginBottom: spacing.xl,
   },
   miniStat: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 16,
     gap: 8,
-    ...Shadows.light,
+    ...shadows.light,
   },
   miniStatValue: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.md,
-    marginTop: Spacing.xl,
+    marginBottom: spacing.md,
+    marginTop: spacing.xl,
   },
   loadBadge: {
-    backgroundColor: Colors.primary + '15',
+    backgroundColor: colors.primary + '15',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
@@ -277,19 +282,19 @@ const styles = StyleSheet.create({
   loadBadgeText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: Colors.primary,
+    color: colors.primary,
   },
   relayCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.card,
     borderRadius: 28,
-    padding: Spacing.lg,
-    ...Shadows.light,
+    padding: spacing.lg,
+    ...shadows.light,
   },
   relaySubtitle: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '600',
-    marginBottom: Spacing.lg,
+    marginBottom: spacing.lg,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -301,23 +306,23 @@ const styles = StyleSheet.create({
   },
   relayButton: {
     height: 64,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: colors.background,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 6,
   },
   relayButtonActive: {
-    backgroundColor: Colors.primary,
-    ...Shadows.orange,
+    backgroundColor: colors.primary,
+    ...shadows.blue,
   },
   relayNumber: {
     fontSize: 16,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   relayNumberActive: {
-    color: Colors.white,
+    color: colors.white,
   },
   relayIndicator: {
     width: 12,
@@ -325,51 +330,51 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   viewAll: {
-    color: Colors.primary,
+    color: colors.primary,
     fontSize: 14,
     fontWeight: 'bold',
   },
   roomsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: Spacing.md,
+    gap: spacing.md,
   },
   securityBanner: {
-    marginTop: Spacing.xl,
-    backgroundColor: Colors.white,
+    marginTop: spacing.xl,
+    backgroundColor: colors.card,
     borderRadius: 24,
-    padding: Spacing.md,
+    padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
-    ...Shadows.light,
+    ...shadows.light,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   securityIconBg: {
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   securityTextContainer: {
     flex: 1,
-    marginLeft: Spacing.md,
+    marginLeft: spacing.md,
   },
   securityTitle: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   securityStatus: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   onlineBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F2F2F7',
+    backgroundColor: colors.background,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -379,12 +384,12 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: Colors.success,
+    backgroundColor: colors.success,
   },
   onlineText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: Colors.success,
+    color: colors.success,
   },
 });
 
