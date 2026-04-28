@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home, Zap, Shield, Settings2, Cpu } from 'lucide-react-native';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 
-// Screens
+// Screens  
 import LoginScreen from './src/screens/LoginScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import ControlsScreen from './src/screens/ControlsScreen';
